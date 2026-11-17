@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Візуалізація тривимірних об’єктів</title><link rel="stylesheet" href="style.css"><script src="matrix.js" defer></script><script src="scene3d.js" defer></script><script src="app3d.js" defer></script></head>
+<body><main>
+<p class="eyebrow">Комп’ютерна графіка · Варіант 1</p><h1>Візуалізація тривимірних об’єктів</h1>
+<nav class="tabs"><a href="index.html" class="active">3D-сцена</a><a href="2d.html">2D-перетворення</a></nav>
+<p class="lead">Трикутна піраміда, матричні перетворення, проєкції, освітлення та тінь.</p>
+<div class="toolbar"><label>Проєкція <select id="projection"><option value="perspective">Перспективна</option><option value="orthographic">Ортографічна</option></select></label><label>Стан <select id="stage"><option value="all">Усі етапи</option><option value="0">Початкова</option><option value="1">Після масштабування</option><option value="2">Після обертання</option><option value="3">Фінальна</option></select></label><button id="restore" type="button">Початковий ракурс</button></div>
+<div class="view-controls"><label>Азимут <output id="yaw-value">25°</output><input id="yaw" type="range" min="-180" max="180" value="25" step="1"></label><label>Висота погляду <output id="elevation-value">28°</output><input id="elevation" type="range" min="8" max="75" value="28" step="1"></label></div>
+<div class="toolbar"><label><input id="lighting" type="checkbox" checked>Освітлення</label><label><input id="shadow" type="checkbox" checked>Тінь</label><label><input id="wireframe" type="checkbox">Лише каркас</label><label><input id="labels" type="checkbox" checked>Вершини</label><button id="save" class="primary" type="button" disabled>Зберегти 3D PNG</button></div>
+<canvas id="scene" width="880" height="680" role="img" aria-label="Піраміда на різних етапах геометричних перетворень, освітлені грані та тінь на площині.">Потрібен браузер із підтримкою Canvas.</canvas>
+<p id="status" class="status" role="status" aria-live="polite">Підготовка сцени…</p>
+<p class="muted">Перетягування мишею змінює ракурс. Перетворення об’єкта: S(1,2; 1,2; 1,2) → Rz(30°) → T(30; 15; 0). Площина основи: Z = 0.</p>
+<h2>Порівняння проєкцій</h2><p class="muted">Однакова фінальна піраміда та однаковий ракурс для обох проєкцій.</p><canvas id="comparison" width="880" height="440" role="img" aria-label="Ортографічна та перспективна проєкції фінальної піраміди поруч."></canvas><div class="toolbar"><button id="save-comparison" type="button" disabled>Зберегти порівняння PNG</button></div>
+<details><summary>Координати вершин та матриця</summary><div class="table-wrap space"><table><thead><tr><th>Стан</th><th>Вершина</th><th>X</th><th>Y</th><th>Z</th></tr></thead><tbody id="coordinates"></tbody></table></div><h2>Підсумкова матриця 4 × 4</h2><p class="muted">M = T · Rz · S. Вершини задані стовпцями (x; y; z; 1).</p><div class="matrix-wrap"><table class="matrix"><tbody id="matrix"></tbody></table></div></details>
+<noscript>Увімкніть JavaScript для відображення сцени.</noscript>
+</main></body></html>

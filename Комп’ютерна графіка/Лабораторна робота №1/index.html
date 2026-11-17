@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Базові графічні примітиви</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f3f5f8; color: #172033; font: 16px/1.5 Arial, sans-serif; }
+    main { max-width: 880px; margin: 32px auto; padding: 0 24px; }
+    .eyebrow { margin: 0 0 8px; color: #526077; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(25px, 4vw, 34px); line-height: 1.2; }
+    .intro { margin: 12px 0 22px; color: #526077; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 16px; }
+    button { border: 1px solid #c9d1de; border-radius: 7px; padding: 10px 16px; background: white; color: #172033; font: inherit; cursor: pointer; }
+    button.primary { background: #185ca6; border-color: #185ca6; color: white; }
+    button:hover { filter: brightness(.94); }
+    button:disabled { opacity: .5; cursor: default; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #d18d00; outline-offset: 3px; }
+    label { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    input { width: 17px; height: 17px; accent-color: #185ca6; }
+    canvas { display: block; width: 100%; height: auto; border-radius: 9px; background: #101820; }
+    .caption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; color: #526077; font-size: 13px; margin: 10px 0 0; }
+    #status { min-height: 24px; margin: 14px 0 0; color: #35445b; font-size: 14px; }
+    details { margin-top: 20px; padding: 14px 0; border-top: 1px solid #dce1e9; }
+    summary { cursor: pointer; font-weight: bold; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #dce1e9; }
+    th { color: #526077; }
+    .note { color: #526077; font-size: 14px; }
+    @media (max-width: 520px) { main { padding: 0 16px; margin: 24px auto; } label { margin-left: 0; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Комп’ютерна графіка · Варіант 1</p>
+    <h1>Базові графічні примітиви</h1>
+    <p class="intro">Точка, лінія, трикутник і п’ятикутник у різних частинах площини.</p>
+    <div class="toolbar">
+      <button id="save" class="primary" type="button" disabled>Зберегти PNG</button>
+      <button id="redraw" type="button" disabled>Перемалювати</button>
+      <label><input id="labels" type="checkbox" checked disabled>Підписи фігур</label>
+    </div>
+    <canvas id="scene" width="800" height="600" role="img" aria-label="Червона точка вгорі ліворуч, зелена лінія вгорі праворуч, синій трикутник унизу ліворуч і жовтий п’ятикутник унизу праворуч.">
+      Ваш браузер не підтримує Canvas. Відкрийте файл у Microsoft Edge, Google Chrome або Firefox.
+    </canvas>
+    <div class="caption"><span>800 × 600 px</span><span>Початок координат — лівий верхній кут</span></div>
+    <p id="status" role="status" aria-live="polite">Підготовка сцени…</p>
+    <noscript><p>Для побудови сцени потрібно увімкнути JavaScript у браузері.</p></noscript>
+    <details>
+      <summary>Координати та кольори</summary>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Примітив</th><th scope="col">Координати</th><th scope="col">Колір RGB</th></tr></thead>
+          <tbody id="parameters"></tbody>
+        </table>
+      </div>
+      <p class="note">Вісь X спрямована праворуч, вісь Y — вниз. Точку позначено круглим маркером діаметром 14 px; товщина лінії — 5 px. Фон: RGB(16, 24, 32).</p>
+    </details>
+  </main>
+  <script>
+    "use strict";
+
+    const primitives = {
+      point: { name: "Точка", position: [180, 150], radius: 7, color: "#ff5252", rgb: "255, 82, 82" },
+      line: { name: "Лінія", vertices: [[470, 95], [705, 220]], width: 5, color: "#46d78a", rgb: "70, 215, 138" },
+      triangle: { name: "Трикутник", vertices: [[110, 475], [200, 315], [300, 475]], color: "#4d9dff", rgb: "77, 157, 255" },
+      polygon: { name: "П’ятикутник", vertices: [[590, 315], [695, 390], [655, 510], [525, 510], [485, 390]], color: "#ffce54", rgb: "255, 206, 84" }
+    };
+
+    const canvas = document.getElementById("scene");
+    const screen = canvas.getContext("2d");
+
+    const buffer = document.createElement("canvas");
+    buffer.width = canvas.width;
+    buffer.height = canvas.height;
+    const context = buffer.getContext("2d");
+    const status = document.getElementById("status");
+    const labels = document.getElementById("labels");
+    const saveButton = document.getElementById("save");
+    const redrawButton = document.getElementById("redraw");
+
+    function drawPoint(point) {
+      context.beginPath();
+      context.arc(point.position[0], point.position[1], point.radius, 0, Math.PI * 2);
+      context.fillStyle = point.color;
+      context.fill();
+    }
+
+    function drawLine(line) {
+      context.beginPath();
+      context.moveTo(...line.vertices[0]);
+      context.lineTo(...line.vertices[1]);
+      context.strokeStyle = line.color;
+      context.lineWidth = line.width;
+      context.lineCap = "round";
+      context.stroke();
+    }
+
+    function drawPolygon(polygon) {
+      context.beginPath();
+      context.moveTo(...polygon.vertices[0]);
+      for (let i = 1; i < polygon.vertices.length; i++) {
+        context.lineTo(...polygon.vertices[i]);
+      }
+      context.closePath();
+      context.fillStyle = polygon.color;
+      context.fill();
+    }
+
+    function drawLabels() {
+      context.fillStyle = "#f0f4f8";
+      context.font = "20px Arial, sans-serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText("Точка", 180, 200);
+      context.fillText("Лінія", 590, 260);
+      context.fillText("Трикутник", 205, 545);
+      context.fillText("П’ятикутник", 590, 555);
+    }
+
+    function renderScene() {
+
+      context.clearRect(0, 0, buffer.width, buffer.height);
+      context.fillStyle = "#101820";
+      context.fillRect(0, 0, buffer.width, buffer.height);
+
+      drawPoint(primitives.point);
+      drawLine(primitives.line);
+      drawPolygon(primitives.triangle);
+      drawPolygon(primitives.polygon);
+      if (labels.checked) drawLabels();
+
+      screen.clearRect(0, 0, canvas.width, canvas.height);
+      screen.drawImage(buffer, 0, 0);
+      status.textContent = "Побудовано 4 примітиви. Сцену можна зберегти у PNG.";
+    }
+
+    function saveScene() {
+
+      renderScene();
+      saveButton.disabled = true;
+      canvas.toBlob(blob => {
+        saveButton.disabled = false;
+        if (!blob) {
+          status.textContent = "Не вдалося створити PNG. Спробуйте ще раз.";
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "Lab1_Variant1.png";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        status.textContent = "PNG передано браузеру для збереження. Перевірте завантаження.";
+      }, "image/png");
+    }
+
+    const tableBody = document.getElementById("parameters");
+    for (const primitive of Object.values(primitives)) {
+      const row = document.createElement("tr");
+      const vertices = primitive.vertices || [primitive.position];
+      const values = [primitive.name, vertices.map(([x, y]) => `(${x}; ${y})`).join(", "), primitive.rgb];
+      for (const value of values) {
+        const cell = document.createElement("td");
+        cell.textContent = value;
+        row.appendChild(cell);
+      }
+      tableBody.appendChild(row);
+    }
+
+    if (!screen || !context) {
+      status.textContent = "Не вдалося створити графічний контекст. Відкрийте файл в іншому браузері.";
+    } else {
+      saveButton.disabled = redrawButton.disabled = labels.disabled = false;
+      redrawButton.addEventListener("click", () => requestAnimationFrame(renderScene));
+      labels.addEventListener("change", () => requestAnimationFrame(renderScene));
+      saveButton.addEventListener("click", saveScene);
+      requestAnimationFrame(renderScene);
+    }
+</script>
+</body>
+</html>

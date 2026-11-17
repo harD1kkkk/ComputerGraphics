@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Алгоритми растеризації</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="raster.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Комп’ютерна графіка · Варіант 1</p>
+  <h1>Алгоритми растеризації</h1>
+  <p class="lead">Побудова відрізка, кола й еліпса з окремих пікселів.</p>
+  <section aria-labelledby="scene-heading">
+    <div class="section-head">
+      <h2 id="scene-heading">Спільне полотно</h2>
+      <button id="save-scene" class="primary" type="button" disabled>Зберегти сцену PNG</button>
+    </div>
+    <div class="toolbar">
+      <label>Показати <select id="mode"><option value="all">Усі алгоритми</option><option value="dda">Лінію DDA</option><option value="bres">Лінію Брезенхема</option><option value="circle">Коло</option><option value="ellipse">Еліпс</option></select></label>
+      <label class="check"><input type="checkbox" id="grid" checked>Координатна сітка</label>
+      <span id="coordinates" class="muted">X → праворуч · Y → вниз</span>
+    </div>
+    <canvas id="scene" width="880" height="700" role="img" aria-label="Спільне растрове полотно з лініями DDA і Брезенхема, колом та еліпсом.">Для роботи потрібен браузер із підтримкою Canvas.</canvas>
+    <p id="status" class="status" role="status" aria-live="polite">Підготовка сцени…</p>
+    <noscript><p>Увімкніть JavaScript, щоб побудувати фігури.</p></noscript>
+    <details>
+      <summary>Координати та експерименти</summary>
+      <form id="line-form">
+        <div class="inputs">
+          <label>x₁<input id="x1" name="x1" type="number" min="0" max="150" step="1" value="10" required></label>
+          <label>y₁<input id="y1" name="y1" type="number" min="0" max="100" step="1" value="10" required></label>
+          <label>x₂<input id="x2" name="x2" type="number" min="0" max="150" step="1" value="120" required></label>
+          <label>y₂<input id="y2" name="y2" type="number" min="0" max="100" step="1" value="40" required></label>
+        </div>
+        <div class="toolbar">
+          <button type="submit">Побудувати відрізок</button>
+          <button id="restore" type="button">Повернути варіант 1</button>
+          <button id="hundred" type="button">Відрізок 100 px</button>
+        </div>
+      </form>
+      <p class="muted">Коло: центр (60; 60), r = 25. Еліпс: центр (60; 60), a = 40, b = 20. Ці параметри задано у файлі app.js.</p>
+      <p class="muted">Сітка: 151 × 101 піксель; один піксель збільшено до 5 × 5 для перегляду. При зміні кінців відрізка оновлюються обидва алгоритми та порівняння.</p>
+    </details>
+  </section>
+  <section aria-labelledby="compare-heading">
+    <div class="section-head">
+      <h2 id="compare-heading">Порівняння відрізка</h2>
+      <button id="save-comparison" type="button" disabled>Зберегти порівняння PNG</button>
+    </div>
+    <p id="match-text"></p>
+    <canvas id="comparison" width="880" height="500" role="img" aria-label="Окремі зображення відрізка: DDA синім кольором і Брезенхем червоним."></canvas>
+    <div class="table-wrap">
+      <table><thead><tr><th scope="col">Показник</th><th scope="col">DDA</th><th scope="col">Брезенхем</th></tr></thead><tbody id="metrics"></tbody></table>
+    </div>
+    <p class="muted">Похибка — найбільша перпендикулярна відстань від центра вибраного пікселя до точної прямої. Лічильники показують окремі операції алгоритмів; малювання, цикли та підготовка змінних не входять до лічильників додавань і перевірок. Час виконання не вимірюється.</p>
+  </section>
+</main>
+</body>
+</html>
